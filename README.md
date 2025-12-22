@@ -1,5 +1,6 @@
 - [REST API](#rest-api)
   - [WHAT IS THE REST API](#what-is-the-rest-api)
+  - [URI](#uri)
   - [URL - Uniform Resource Locator](#url---uniform-resource-locator)
     - [URL encoding](#url-encoding)
   - [HTTP Request](#http-request)
@@ -21,6 +22,10 @@
     - [5xx — Server Errors](#5xx--server-errors)
 - [The Six Constraints](#the-six-constraints)
   - [Uniform Interface](#uniform-interface)
+    - [Resource Identification (via URI)](#resource-identification-via-uri)
+    - [Manipulation of Resources through Representations](#manipulation-of-resources-through-representations)
+    - [Self-Descriptive Messages](#self-descriptive-messages)
+    - [Hypermedia as the Engine of Application State (HATEOAS)](#hypermedia-as-the-engine-of-application-state-hateoas)
   - [Stateless](#stateless)
   - [Cacheable](#cacheable)
   - [Client-Server](#client-server)
@@ -39,6 +44,13 @@
 - And waits for a response, which:
   - Indicates status via an HTTP response code
   - And usually has more JSON in the body.
+
+## URI
+
+- The purpose of a Uniform Resource Identifier (URI) is to provide an identifier to distinguish the given resource from other resources. A URI distinguishes but doesn’t guarantee an identity of a resource, since the underlying resource can be changed.A URI is a string of characters that identifies a resource
+- URI is a broad term that encapsulates two additional terms:
+  - URL - Uniform Resource Locator
+  - URN - Uniform Resource Name
 
 ## URL - Uniform Resource Locator
 
@@ -319,11 +331,121 @@ GET /users?page=2&limit=10
 
 - The uniform interface constraint defines the interface between clients and servers
 
+### Resource Identification (via URI)
+
+- Each resource is uniquely identified, typically through the URI
+- URI represents nouns (resources), not actions.
+
+- Good example
+
+```
+GET /users/123
+GET /orders/456
+```
+
+- Bad example (RPC style)
+
+```
+GET /getUserById?id=123
+POST /fetchOrder
+```
+
+### Manipulation of Resources through Representations
+
+- Clients don’t modify resources directly, but through representations (JSON, XML, etc.).
+
+- Example:
+  - The JSON body is the representation
+  - Server updates the resource based on that representation
+
+```
+PUT /users/123
+Content-Type: application/json
+
+{
+  "name": "Alice",
+  "email": "alice@example.com"
+}
+```
+
+### Self-Descriptive Messages
+
+- Each message includes all the information necessary for understanding and processing it
+- Example request:
+  - What format the data is `Content-Type`
+  - How to authenticate `Authorization`
+  - What action to take `POST /orders`
+
+```
+POST /orders
+Content-Type: application/json
+Authorization: Bearer token
+```
+
+### Hypermedia as the Engine of Application State (HATEOAS)
+
+- Clients should be able to navigate through REST APIs using hyperlinks included in the API’s response. Ideally, clients need to know only the initial entry point and can then explore available interactions through hypertext/hypermedia links
+- Example response:
+  - Client logic: Doesn’t hardcode URLs. Follows links provided by the server
+
+```
+{
+  "id": 123,
+  "status": "pending",
+  "links": {
+    "self": "/orders/123",
+    "cancel": "/orders/123/cancel",
+    "pay": "/orders/123/pay"
+  }
+}
+```
+
 ## Stateless
+
+- Each client request contains all the information needed to understand and complete the request by the server (independently of any previous requests).
+- The server doesn’t store any session state.
+- If the application requires state persistence, that state is maintained on the client
+- Example (GOOD): Token is sent every time. Server doesn’t care about previous calls
+  - Token is sent every time
+  - Server doesn’t care about previous calls
+
+Request 1
+
+```
+GET /users/123
+Authorization: Bearer eyJhbGciOi...
+```
+
+Request 2
+
+```
+GET /users/123/orders
+Authorization: Bearer eyJhbGciOi...
+
+```
 
 ## Cacheable
 
+- Responses should explicitly indicate whether they are cacheable.
+- Caching improves network efficiency, reduces latency, and provides better user-perceived performance by allowing clients and intermediaries to reuse responses when appropriate
+- Examples:
+
+**Cacheable response**
+
+```
+HTTP/1.1 200 OK
+Cache-Control: public, max-age=3600
+Content-Type: application/json
+
+{
+  "id": 123,
+  "title": "REST API Guide"
+}
+```
+
 ## Client-Server
+
+- Separates responsibilities between the client and the server, where the client makes the request, and the server produces the response. This constraint leads to improved portability across platforms because
 
 ## Layered System
 
