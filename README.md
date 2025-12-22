@@ -1,6 +1,7 @@
 - [REST API](#rest-api)
   - [WHAT IS THE REST API](#what-is-the-rest-api)
   - [URL - Uniform Resource Locator](#url---uniform-resource-locator)
+    - [URL encoding](#url-encoding)
   - [HTTP Request](#http-request)
     - [What is an HTTP Request?](#what-is-an-http-request)
     - [Client–Server Model](#clientserver-model)
@@ -19,6 +20,12 @@
     - [4xx — Client Errors](#4xx--client-errors)
     - [5xx — Server Errors](#5xx--server-errors)
 - [The Six Constraints](#the-six-constraints)
+  - [Uniform Interface](#uniform-interface)
+  - [Stateless](#stateless)
+  - [Cacheable](#cacheable)
+  - [Client-Server](#client-server)
+  - [Layered System](#layered-system)
+  - [Code on Demand](#code-on-demand)
 
 # REST API
 
@@ -52,6 +59,52 @@
 | tag=api&sort=date | Query string parameters | Key-value pairs used to pass additional data to the server       |
 | #                 | Fragment identifier     | Marks the beginning of a fragment identifier within the resource |
 | latest            | Fragment                | The section or element within the resource                       |
+
+### URL encoding
+
+- **URL Encoding** (also called percent-encoding) is the process of converting unsafe or reserved characters in a URL into a safe format
+
+```
+character → UTF-8 bytes → hexadecimal → %HH
+```
+
+- Example:
+
+  - `Space → ASCII 32 → Hex 20 → %20`
+
+  - `& → ASCII 38 → Hex 26 → %26`
+
+- Why **URL Encoding** is required:
+
+  - URLs are only guaranteed to work safely with ASCII characters.
+  - Characters like spaces, symbols, or Unicode (e.g. Vietnamese characters) must be encoded to avoid ambiguity.
+
+- Characters that must be encoded
+  - Reserved characters: These characters have special meanings in URLs and must be encoded when used as data `! * ' ( ) ; : @ & = + $ , / ? # [ ]`
+  - Space `space → %20   (or + in form encoding)`
+  - Unicode characters `điện thoại → %C4%91i%E1%BB%87n%20tho%E1%BA%A1i`
+- How to do URL Encoding (in practice)
+  - JavaScript: `encodeURIComponent("điện thoại & phụ kiện")` -> `%C4%91i%E1%BB%87n%20tho%E1%BA%A1i%20%26%20ph%E1%BB%A5%20ki%E1%BB%87n`
+  - Python
+
+Encode query parameters
+
+```
+from urllib.parse import urlencode
+
+params = {"q": "điện thoại & phụ kiện"}
+query_string = urlencode(params)
+
+```
+
+Encode a single string
+
+```
+from urllib.parse import quote
+
+quote("điện thoại & phụ kiện")
+
+```
 
 ## HTTP Request
 
@@ -259,3 +312,19 @@ GET /users?page=2&limit=10
 | **508** | Loop Detected              |
 
 # The Six Constraints
+
+- The REST architectural style describes six constraints. These constraints, applied to the architecture, were originally communicated by Roy Fielding in his doctoral dissertation and defines the basis of RESTful-style
+
+## Uniform Interface
+
+- The uniform interface constraint defines the interface between clients and servers
+
+## Stateless
+
+## Cacheable
+
+## Client-Server
+
+## Layered System
+
+## Code on Demand
