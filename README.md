@@ -31,6 +31,7 @@
   - [Client-Server](#client-server)
   - [Layered System](#layered-system)
   - [Code on Demand](#code-on-demand)
+  - [RESTful web API design](#restful-web-api-design)
 
 # REST API
 
@@ -445,8 +446,62 @@ Content-Type: application/json
 
 ## Client-Server
 
-- Separates responsibilities between the client and the server, where the client makes the request, and the server produces the response. This constraint leads to improved portability across platforms because
+- Separates responsibilities between the client and the server, where the client makes the request, and the server produces the response. This constraint leads to improved portability across platforms because clients and servers can evolve independently
 
 ## Layered System
 
+- Component behavior can be encapsulated within a hierarchy of layers, where the interaction of the layer is limited to the layers with which it’s interacting. As a result of this constraint, content can move, for example, through gateways, proxies, and reverse proxies, with each acting as a layer.
+- Example: Fetching a user profile
+
+**Client request**
+
+```
+GET https://api.example.com/users/42
+```
+
+**What actually happens (hidden from the client)**
+
+```
+Client
+  ↓
+CDN (Cache Layer)
+  ↓
+API Gateway (Auth, Rate Limit)
+  ↓
+Load Balancer
+  ↓
+User Service (REST API)
+  ↓
+Database
+```
+
+- Client sends the request: It only knows the URL: https://api.example.com/users/42
+- CDN checks cache: If the response is cached → returns it immediately. The API server is never called
+- API Gateway: Verifies JWT token. Applies rate limiting
+- Load Balancer: Chooses one backend server
+- User Service: Reads data from the database. Returns JSON
+
 ## Code on Demand
+
+- Client functionality can be extended by allowing the client to download and execute scripts from the server. This enables new behaviors within the client without requiring redeployment.
+- Example
+
+**Server response**
+
+```
+{
+  "data": {
+    "price": 100,
+    "tax": 10
+  },
+  "script": "return data.price + data.tax;"
+}
+```
+
+**Client behavior**
+
+```
+const result = new Function("data", response.script)(response.data);
+```
+
+## RESTful web API design
