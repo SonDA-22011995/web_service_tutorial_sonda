@@ -32,6 +32,7 @@
   - [Layered System](#layered-system)
   - [Code on Demand](#code-on-demand)
   - [RESTful web API design](#restful-web-api-design)
+    - [API Endpoints](#api-endpoints)
 
 # REST API
 
@@ -505,3 +506,118 @@ const result = new Function("data", response.script)(response.data);
 ```
 
 ## RESTful web API design
+
+### API Endpoints
+
+- Avoid using verbs in URIs to represent operations.
+
+**GOOD**
+
+```
+https://api.contoso.com/orders // Good
+```
+
+**BAD**
+
+```
+https://api.contoso.com/create-order // Avoid
+```
+
+- Entities are often grouped together into collections like `customers` or `orders`. A collection is a separate resource from the `items` inside the collection, so it should have its own URI
+
+**URI might represent the collection of orders**
+
+```
+https://api.contoso.com/orders
+```
+
+**The URI of each item**
+
+```
+https://api.contoso.com/orders/<string:order_id>
+```
+
+- Use nouns for resource names. The HTTP `GET`, `POST`, `PUT`, `PATCH`, and `DELETE` methods already imply the verbal action
+
+**GOOD**
+
+```
+/orders
+```
+
+**BAD**
+
+```
+/create-order
+```
+
+- Use plural nouns to name collection URIs.
+
+**BAD**
+
+```
+GET /customer
+GET /order
+```
+
+**Good**
+
+```
+GET /customers
+GET /orders
+```
+
+- Consider the relationships between different types of resources and how you might expose these associations
+
+```
+/customers/5/orders # might represent all of the orders for customer 5
+```
+
+- Keep relationships simple and flexible
+
+**BAD**: This level of complexity can be difficult to maintain and is inflexible if the relationships between resources change in the future
+
+```
+/customers/1/orders/99/products
+```
+
+**GOOD**
+
+```
+/customers/1/orders # find all the orders for customer 1
+/orders/99/products # find the products in this order
+```
+
+- Avoid a large number of small resources.
+
+**BAD**
+
+```
+GET /orders/1
+GET /orders/1/items
+GET /items/3
+GET /items/4
+GET /items/5
+```
+
+**GOOD**
+
+```
+GET /orders/1?include=items
+```
+
+- Avoid creating APIs that mirror the internal structure of a database.
+
+**BAD**
+
+```
+GET /tbl_customer
+GET /customer_order_mapping
+```
+
+**GOOD**
+
+```
+GET /customers
+GET /orders
+```
