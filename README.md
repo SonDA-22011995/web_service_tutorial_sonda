@@ -41,6 +41,14 @@
       - [Media type versioning](#media-type-versioning)
       - [REST API Versioning – Advantages \& Disadvantages](#rest-api-versioning--advantages--disadvantages)
     - [Implement data pagination and filtering](#implement-data-pagination-and-filtering)
+      - [Pagination](#pagination)
+      - [Filtering](#filtering)
+      - [Sorting](#sorting)
+      - [Field selection for client-defined projections](#field-selection-for-client-defined-projections)
+    - [Implement HATEOAS (Hypertext as the Engine of Application State)](#implement-hateoas-hypertext-as-the-engine-of-application-state)
+    - [Support partial responses](#support-partial-responses)
+    - [Multitenant web APIs](#multitenant-web-apis)
+      - [Subdomain or Domain-Based Isolation (DNS-Level Tenancy)](#subdomain-or-domain-based-isolation-dns-level-tenancy)
 
 # REST API
 
@@ -696,3 +704,201 @@ Accept: application/vnd.myapi.v1+json
 | **No Versioning**         | `/customers/10`                       | • Simplest design<br>• Cleanest URIs<br>• No version overhead                             | • Cannot support breaking changes<br>• Risky for public APIs                         | Internal APIs with strict discipline   |
 
 ### Implement data pagination and filtering
+
+#### Pagination
+
+- Pagination divides large datasets into smaller, manageable chunks.
+- Use query parameters like
+  - `limit` to specify the number of items to return
+  - `offset` to specify the starting point.
+- Make sure to also provide meaningful defaults for `limit` and `offset`, such as `limit=25` and `offset=0`
+
+```
+GET /orders?limit=25&offset=50
+```
+
+#### Filtering
+
+- Allows clients to refine the dataset by applying conditions. The API can allow the client to pass the filter in the query string of the URI
+
+```
+# minCost: Filters orders that have a minimum cost of 100.
+# status: Filters orders that have a specific status.
+
+GET /orders?minCost=100&status=shipped
+```
+
+#### Sorting
+
+- Allows clients to sort data by using a sort parameter like `sort=price`
+
+#### Field selection for client-defined projections
+
+- Enable clients to specify only the fields that they need by using a fields parameter like `fields=id,name`
+
+### Implement HATEOAS (Hypertext as the Engine of Application State)
+
+- Each HTTP GET request should return the information necessary to find the resources related directly to the requested object through hyperlinks included in the response.
+- The system is effectively a finite state machine, and the response to each request contains the information necessary to move from one state to another
+
+```
+{
+  "orderID":3,
+  "productID":2,
+  "quantity":4,
+  "orderValue":16.60,
+  "links":[
+    {
+      "rel":"customer",
+      "href":"https://api.contoso.com/customers/3",
+      "action":"GET",
+      "types":["text/xml","application/json"]
+    },
+    {
+      "rel":"customer",
+      "href":"https://api.contoso.com/customers/3",
+      "action":"PUT",
+      "types":["application/x-www-form-urlencoded"]
+    },
+    {
+      "rel":"customer",
+      "href":"https://api.contoso.com/customers/3",
+      "action":"DELETE",
+      "types":[]
+    },
+    {
+      "rel":"self",
+      "href":"https://api.contoso.com/orders/3",
+      "action":"GET",
+      "types":["text/xml","application/json"]
+    },
+    {
+      "rel":"self",
+      "href":"https://api.contoso.com/orders/3",
+      "action":"PUT",
+      "types":["application/x-www-form-urlencoded"]
+    },
+    {
+      "rel":"self",
+      "href":"https://api.contoso.com/orders/3",
+      "action":"DELETE",
+      "types":[]
+    }]
+}
+```
+
+### Support partial responses
+
+- Some resources contain large binary fields, such as files or images. To overcome problems caused by unreliable and intermittent connections and to improve response times, consider supporting the partial retrieval of large binary resources
+- To support partial responses, the web API should support the Accept-Ranges header for `GET` requests for large resources. This header indicates that the `GET` operation supports partial requests. The client application can submit `GET` requests that return a subset of a resource, specified as a range of bytes.
+- A HEAD request is similar to a GET request, except that it only returns the HTTP headers that describe the resource, with an empty message body. A client application can issue a `HEAD` request to determine whether to fetch a resource by using partial `GET` requests.
+
+Request
+
+```
+HEAD https://api.contoso.com/products/10?fields=productImage
+```
+
+Response
+
+```
+HTTP/1.1 200 OK
+
+Accept-Ranges: bytes
+Content-Type: image/jpeg
+Content-Length: 4580
+```
+
+Request
+
+```
+GET https://api.contoso.com/products/10?fields=productImage
+Range: bytes=0-2499
+```
+
+Response
+
+```
+HTTP/1.1 206 Partial Content
+
+Accept-Ranges: bytes
+Content-Type: image/jpeg
+Content-Length: 2500
+Content-Range: bytes 0-2499/4580
+
+[...]
+```
+
+```
+from flask import Flask, request, Response, abort
+import os
+
+app = Flask(__name__)
+
+FILE_PATH = "sample.mp4"
+
+@app.route("/video")
+def get_video():
+    file_size = os.path.getsize(FILE_PATH)
+    range_header = request.headers.get("Range")
+
+    if not range_header:
+        # Trả toàn bộ file
+        with open(FILE_PATH, "rb") as f:
+            data = f.read()
+        return Response(
+            data,
+            status=200,
+            mimetype="video/mp4",
+            headers={
+                "Content-Length": str(file_size),
+                "Accept-Ranges": "bytes",
+            },
+        )
+
+    # Ví dụ: Range: bytes=0-1023
+    bytes_range = range_header.replace("bytes=", "")
+    start, end = bytes_range.split("-")
+
+    start = int(start)
+    end = int(end) if end else file_size - 1
+
+    length = end - start + 1
+
+    with open(FILE_PATH, "rb") as f:
+        f.seek(start)
+        chunk = f.read(length)
+
+    return Response(
+        chunk,
+        status=206,
+        mimetype="video/mp4",
+        headers={
+            "Content-Range": f"bytes {start}-{end}/{file_size}",
+            "Accept-Ranges": "bytes",
+            "Content-Length": str(length),
+        },
+    )
+
+
+if __name__ == "__main__":
+    app.run(debug=True)
+```
+
+### Multitenant web APIs
+
+- A multitenant web API solution is shared by multiple tenants, such as distinct organizations that have their own groups of users.
+- Multitenancy directly impacts:
+  - API design
+  - Resource access
+  - Authentication & authorization
+  - Routing and scalability
+  - Caching and security
+- Designing for multitenancy from the beginning helps avoid expensive refactoring later.
+- Common tenant identification mechanisms:
+  - Subdomain / domain
+  - HTTP headers
+  - JWT claims
+  - URI path
+
+#### Subdomain or Domain-Based Isolation (DNS-Level Tenancy)
