@@ -885,6 +885,50 @@ if __name__ == "__main__":
     app.run(debug=True)
 ```
 
+```
+async function downloadFile() {
+  const chunkSize = 1024 * 1024; // 1MB
+  let start = 0;
+  let totalSize = null;
+  const chunks = [];
+
+  while (true) {
+    const end = start + chunkSize - 1;
+
+    const response = await fetch("/download", {
+      headers: {
+        "Range": `bytes=${start}-${end}`
+      }
+    });
+
+    if (response.status !== 206) {
+      throw new Error("Server does not support partial content");
+    }
+
+    const contentRange = response.headers.get("Content-Range");
+    // bytes 0-1048575/73400320
+
+    if (!totalSize) {
+      totalSize = parseInt(contentRange.split("/")[1], 10);
+    }
+
+    const blob = await response.blob();
+    chunks.push(blob);
+
+    start += blob.size;
+
+    // 👉 ĐIỀU KIỆN TẢI XONG
+    if (start >= totalSize) {
+      break;
+    }
+  }
+
+  // Gộp các chunk lại thành 1 file
+  const finalBlob = new Blob(chunks);
+  return finalBlob;
+}
+```
+
 ### Multitenant web APIs
 
 - A multitenant web API solution is shared by multiple tenants, such as distinct organizations that have their own groups of users.
