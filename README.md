@@ -20,6 +20,24 @@
 
 `http://www.example.com:80/blog/2025/search?tag=api&sort=date#latest`
 
+```
+http://www.example.com:80/blog/2025/search?tag=api&sort=date#latest
+│───│   │   │        │ │ │                 │               │
+│   │   │   │        │ │ │                 │               └─ Fragment
+│   │   │   │        │ │ │                 └─ Fragment identifier (#)
+│   │   │   │        │ │ └─ Query parameters (tag=api&sort=date)
+│   │   │   │        │ └─ Query separator (?)
+│   │   │   │        └─ Path (/blog/2025/search)
+│   │   │   └─ Port (80)
+│   │   │
+│   │   └─ Domain (example.com)
+│   │
+│   └─ Subdomain (www)
+│
+└─ Scheme (http)
+
+```
+
 | URL value         | URL term                | Explanation                                                      |
 | ----------------- | ----------------------- | ---------------------------------------------------------------- |
 | http              | Scheme                  | The application layer protocol used to access the resource       |
