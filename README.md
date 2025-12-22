@@ -33,6 +33,14 @@
   - [Code on Demand](#code-on-demand)
   - [RESTful web API design](#restful-web-api-design)
     - [API Endpoints](#api-endpoints)
+    - [Implement asynchronous methods](#implement-asynchronous-methods)
+    - [Implement API version](#implement-api-version)
+      - [URI versioning](#uri-versioning)
+      - [Query string versioning](#query-string-versioning)
+      - [Header versioning](#header-versioning)
+      - [Media type versioning](#media-type-versioning)
+      - [REST API Versioning – Advantages \& Disadvantages](#rest-api-versioning--advantages--disadvantages)
+    - [Implement data pagination and filtering](#implement-data-pagination-and-filtering)
 
 # REST API
 
@@ -621,3 +629,70 @@ GET /customer_order_mapping
 GET /customers
 GET /orders
 ```
+
+### Implement asynchronous methods
+
+- An asynchronous method should return HTTP status code `202` (Accepted) to indicate that the request was accepted for processing but is incomplete.
+
+- If the client sends a GET request to this endpoint, the response should contain the current status of the request. Optionally, it can include an estimated time to completion or a link to cancel the operation.
+
+```
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+    "status":"In progress",
+    "link": { "rel":"cancel", "method":"delete", "href":"/api/status/12345" }
+}
+```
+
+- If the asynchronous operation creates a new resource, the status endpoint should return status code `303` (See Other) after the operation completes. In the `303` response, include a Location header that gives the URI of the new resource
+
+```
+HTTP/1.1 303 See Other
+Location: /api/orders/12345
+```
+
+### Implement API version
+
+- A web API that implements versioning can indicate the features and resources that it exposes, and a client application can submit requests that are directed to a specific version of a feature or resource
+
+#### URI versioning
+
+```
+GET /api/v1/customers/10
+GET /api/v2/customers/10
+```
+
+#### Query string versioning
+
+```
+GET /customers/10?version=1
+GET /customers/10?version=2
+```
+
+#### Header versioning
+
+```
+GET /customers/10
+API-Version: 1
+```
+
+#### Media type versioning
+
+```
+GET /customers/10
+Accept: application/vnd.myapi.v1+json
+```
+
+#### REST API Versioning – Advantages & Disadvantages
+
+| Versioning Strategy       | How it looks                          | Advantages                                                                                | Disadvantages                                                                        | When to use                            |
+| ------------------------- | ------------------------------------- | ----------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ | -------------------------------------- |
+| **URI Versioning**        | `/api/v1/customers/10`                | • Very clear and readable<br>• Easy to implement and test<br>• Widely used in public APIs | • URI changes per version<br>• Not pure REST<br>• HATEOAS links must include version | Public APIs, beginner-friendly systems |
+| **Query Parameter**       | `/customers/10?version=2`             | • Same resource URI<br>• Quick to add to existing APIs                                    | • Poor caching support<br>• Easy to forget or misuse<br>• Less RESTful               | Temporary or internal APIs             |
+| **Header Versioning**     | `API-Version: 2`                      | • Clean and stable URIs<br>• More REST-friendly<br>• Good for microservices               | • Harder to test in browser<br>• Requires good documentation                         | Internal systems, microservices        |
+| **Media Type Versioning** | `Accept: application/vnd.api.v2+json` | • Most REST-correct<br>• Best for HATEOAS<br>• Clear contract via content negotiation     | • Complex to implement<br>• Hard to understand<br>• Custom media types               | Advanced REST, long-term APIs          |
+| **No Versioning**         | `/customers/10`                       | • Simplest design<br>• Cleanest URIs<br>• No version overhead                             | • Cannot support breaking changes<br>• Risky for public APIs                         | Internal APIs with strict discipline   |
+
+### Implement data pagination and filtering
