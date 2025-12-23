@@ -1,5 +1,6 @@
 - [REST API](#rest-api)
   - [WHAT IS THE REST API](#what-is-the-rest-api)
+  - [When to Use REST](#when-to-use-rest)
   - [URI](#uri)
   - [URL - Uniform Resource Locator](#url---uniform-resource-locator)
     - [URL encoding](#url-encoding)
@@ -86,6 +87,54 @@
 - And waits for a response, which:
   - Indicates status via an HTTP response code
   - And usually has more JSON in the body.
+
+## When to Use REST
+
+- REST is well-suited for distributed systems, especially systems with stateless components.
+
+- REST works well for north–south traffic (client ↔ data center), while other API styles such as gRPC or messaging may be better for east–west traffic (service ↔ service).
+
+- REST is ideal for cross-platform integration, including:
+
+  - Internal and external systems
+
+  - Third-party APIs
+
+  - Legacy systems outside your control
+
+- REST is universal and supported by a wide range of:
+
+  - Clients
+
+  - Programming languages
+
+  - Platforms
+
+  - Development and monitoring tools
+
+- REST uses HTTP, making it familiar to: Backend , Frontend developer, Software architects, Security administrators
+
+- REST APIs support multiple data formats, including:
+
+  - Text-based formats (JSON, XML)
+
+  - Compressed payloads
+
+  - Binary-encoded data
+
+- The stateless nature of REST allows:
+
+  - Independent request processing
+
+  - Easy load balancing across multiple servers
+
+- REST supports caching, which:
+
+  - Reduces latency for repeated requests
+
+  - Improves client performance
+
+- REST APIs can leverage CDNs to cache responses closer to users for faster delivery
 
 ## URI
 
