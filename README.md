@@ -20,17 +20,18 @@
     - [3xx — Redirection](#3xx--redirection)
     - [4xx — Client Errors](#4xx--client-errors)
     - [5xx — Server Errors](#5xx--server-errors)
-- [The Six Constraints](#the-six-constraints)
-  - [Uniform Interface](#uniform-interface)
-    - [Resource Identification (via URI)](#resource-identification-via-uri)
-    - [Manipulation of Resources through Representations](#manipulation-of-resources-through-representations)
-    - [Self-Descriptive Messages](#self-descriptive-messages)
-    - [Hypermedia as the Engine of Application State (HATEOAS)](#hypermedia-as-the-engine-of-application-state-hateoas)
-  - [Stateless](#stateless)
-  - [Cacheable](#cacheable)
-  - [Client-Server](#client-server)
-  - [Layered System](#layered-system)
+  - [The Six Constraints](#the-six-constraints)
+    - [Uniform Interface](#uniform-interface)
+      - [Resource Identification (via URI)](#resource-identification-via-uri)
+      - [Manipulation of Resources through Representations](#manipulation-of-resources-through-representations)
+      - [Self-Descriptive Messages](#self-descriptive-messages)
+      - [Hypermedia as the Engine of Application State (HATEOAS)](#hypermedia-as-the-engine-of-application-state-hateoas)
+    - [Stateless](#stateless)
+    - [Cacheable](#cacheable)
+    - [Client-Server](#client-server)
+    - [Layered System](#layered-system)
   - [Code on Demand](#code-on-demand)
+  - [API Maturity Models](#api-maturity-models)
   - [RESTful web API design](#restful-web-api-design)
     - [API Endpoints](#api-endpoints)
     - [Implement asynchronous methods](#implement-asynchronous-methods)
@@ -343,15 +344,15 @@ GET /users?page=2&limit=10
 | **507** | Insufficient Storage       |
 | **508** | Loop Detected              |
 
-# The Six Constraints
+## The Six Constraints
 
 - The REST architectural style describes six constraints. These constraints, applied to the architecture, were originally communicated by Roy Fielding in his doctoral dissertation and defines the basis of RESTful-style
 
-## Uniform Interface
+### Uniform Interface
 
 - The uniform interface constraint defines the interface between clients and servers
 
-### Resource Identification (via URI)
+#### Resource Identification (via URI)
 
 - Each resource is uniquely identified, typically through the URI
 - URI represents nouns (resources), not actions.
@@ -370,7 +371,7 @@ GET /getUserById?id=123
 POST /fetchOrder
 ```
 
-### Manipulation of Resources through Representations
+#### Manipulation of Resources through Representations
 
 - Clients don’t modify resources directly, but through representations (JSON, XML, etc.).
 
@@ -388,7 +389,7 @@ Content-Type: application/json
 }
 ```
 
-### Self-Descriptive Messages
+#### Self-Descriptive Messages
 
 - Each message includes all the information necessary for understanding and processing it
 - Example request:
@@ -402,7 +403,7 @@ Content-Type: application/json
 Authorization: Bearer token
 ```
 
-### Hypermedia as the Engine of Application State (HATEOAS)
+#### Hypermedia as the Engine of Application State (HATEOAS)
 
 - Clients should be able to navigate through REST APIs using hyperlinks included in the API’s response. Ideally, clients need to know only the initial entry point and can then explore available interactions through hypertext/hypermedia links
 - Example response:
@@ -420,7 +421,7 @@ Authorization: Bearer token
 }
 ```
 
-## Stateless
+### Stateless
 
 - Each client request contains all the information needed to understand and complete the request by the server (independently of any previous requests).
 - The server doesn’t store any session state.
@@ -444,7 +445,7 @@ Authorization: Bearer eyJhbGciOi...
 
 ```
 
-## Cacheable
+### Cacheable
 
 - Responses should explicitly indicate whether they are cacheable.
 - Caching improves network efficiency, reduces latency, and provides better user-perceived performance by allowing clients and intermediaries to reuse responses when appropriate
@@ -463,11 +464,11 @@ Content-Type: application/json
 }
 ```
 
-## Client-Server
+### Client-Server
 
 - Separates responsibilities between the client and the server, where the client makes the request, and the server produces the response. This constraint leads to improved portability across platforms because clients and servers can evolve independently
 
-## Layered System
+### Layered System
 
 - Component behavior can be encapsulated within a hierarchy of layers, where the interaction of the layer is limited to the layers with which it’s interacting. As a result of this constraint, content can move, for example, through gateways, proxies, and reverse proxies, with each acting as a layer.
 - Example: Fetching a user profile
@@ -522,6 +523,20 @@ Database
 ```
 const result = new Function("data", response.script)(response.data);
 ```
+
+## API Maturity Models
+
+- Maturity models are used to measure and evaluate the maturity of processes or technologies
+- In software, maturity models assess how well the software is designed and implemented
+
+- Level 0:
+  - An API at this level uses a single URI and single HTTPmethod. An example is the SOAP API, which typically uses one URI (endpoint) and the HTTP POST method to transfer a SOAP-based payload.
+- Level 1
+  - An API at this level uses separate URIs to identify system resources and a single HTTP method (typically POST).
+- Level 2
+  - An API at this level uses separate URIs to identify system resources and uses several HTTP methods on each resource, allowing it to perform Create, Read, Update, and Delete (CRUD) operations.
+- Level 3
+  - An API at this level inherits all properties from level 2, but it’s enriched by hypermedia controls. The controls consist of self-descriptive links that provide information about possible actions in the given state of the API resource. HATEOAS allows API consumers to navigate through APIs, and promises to reduce developers’ reliance on API documentation.
 
 ## RESTful web API design
 
