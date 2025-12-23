@@ -1024,6 +1024,8 @@ Authorization: Bearer <JWT-token including a tenant-id: adventureworks claim>
 
 #### Pass tenant-specific information through the URI path
 
+- This approach appends tenant identifiers within the resource hierarchy and relies on the API gateway or reverse proxy to determine the appropriate tenant based on the path segment. Path-based isolation is effective, but it compromises the web API's RESTful design and introduces more complex routing logic. It often requires pattern matching or regular expressions to parse and canonicalize the URI path.
+
 ```
 GET https://api.contoso.com/tenants/adventureworks/orders/3
 ```
