@@ -49,6 +49,8 @@
     - [Support partial responses](#support-partial-responses)
     - [Multitenant web APIs](#multitenant-web-apis)
       - [Subdomain or Domain-Based Isolation (DNS-Level Tenancy)](#subdomain-or-domain-based-isolation-dns-level-tenancy)
+      - [Pass tenant-specific HTTP headers](#pass-tenant-specific-http-headers)
+      - [Pass tenant-specific information through the URI path](#pass-tenant-specific-information-through-the-uri-path)
 
 # REST API
 
@@ -946,3 +948,82 @@ async function downloadFile() {
   - URI path
 
 #### Subdomain or Domain-Based Isolation (DNS-Level Tenancy)
+
+- What is a Wildcard Domain?
+
+  - A wildcard domain is a DNS configuration that allows any subdomain of a domain to point to the same server, without creating each subdomain manually.
+
+- What is a **CNAME** in DNS?
+
+  - A **CNAME** (Canonical Name) record in DNS is used to make one domain name act as an alias of another domain name.
+
+  - Instead of pointing a domain directly to an IP address, a CNAME points to another domain name, and DNS will then resolve that name to its IP.
+
+Instead of defining:
+
+```
+api.example.com
+admin.example.com
+user1.example.com
+```
+
+You define one DNS rule:
+
+```
+*.example.com
+```
+
+- Subdomain or domain-based isolation routes requests using tenant-specific domains.
+  Wildcard subdomains provide a simple and scalable way to support multiple tenants with minimal DNS configuration, while custom domains allow tenants to use their own branded domains for greater flexibility and control.
+
+- This approach depends on correct DNS configuration (`A`and `CNAME` records) to route traffic to the appropriate infrastructure. Preserving the original hostname between reverse proxies and backend services is important to prevent incorrect redirects and to avoid exposing internal URLs.
+
+- DNS-based routing also plays a key role in data residency, regional routing, and regulatory compliance by ensuring requests are resolved to the correct geographic infrastructure.
+
+Example:
+
+```
+GET https://adventureworks.api.contoso.com/orders/3
+```
+
+#### Pass tenant-specific HTTP headers
+
+- Tenant information can be passed through
+
+  - Custom HTTP headers like `X-Tenant-ID` or `X-Organization-ID`
+  - Through host-based headers like `Host` or `X-Forwarded-Host`
+  - Can be extracted from `JSON Web Token (JWT)` claims
+
+- The choice depends on the routing capabilities of your API gateway or reverse proxy, with header-based solutions requiring a Layer 7 (L7) gateway to inspect each request.
+
+- Advantages
+
+  - It enables centralized authentication, which simplifies security management across multitenant APIs
+  - By using SDKs or API clients, tenant context is dynamically managed at runtime, which reduces client-side configuration complexit
+  - tenant context in headers results in a cleaner, more RESTful API design by avoiding tenant-specific data in the URI.
+
+- Disadvantages
+
+  - This requirement adds processing overhead, which increases compute costs when traffic scales
+  - It complicates caching, particularly when cache layers rely solely on URI-based keys and don't account for headers
+
+```
+GET https://api.contoso.com/orders/3
+X-Tenant-ID: adventureworks
+```
+
+```
+GET https://api.contoso.com/orders/3
+Host: adventureworks
+```
+
+```
+GET https://api.contoso.com/orders/3
+Authorization: Bearer <JWT-token including a tenant-id: adventureworks claim>
+```
+
+#### Pass tenant-specific information through the URI path
+
+```
+GET https://api.contoso.com/tenants/adventureworks/orders/3
+```
