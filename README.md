@@ -56,6 +56,7 @@
       - [Subdomain or Domain-Based Isolation (DNS-Level Tenancy)](#subdomain-or-domain-based-isolation-dns-level-tenancy)
       - [Pass tenant-specific HTTP headers](#pass-tenant-specific-http-headers)
       - [Pass tenant-specific information through the URI path](#pass-tenant-specific-information-through-the-uri-path)
+    - [CACHING](#caching)
   - [Security](#security)
     - [JSON Web Token](#json-web-token)
   - [Documentation](#documentation)
@@ -371,7 +372,10 @@ GET /users?page=2&limit=10
 
 #### WHAT IS CACHING
 
--
+- The term caching describes conditions in which an existing response can be used to satisfy subsequent
+  requests
+- Caching is used to reduce the response time and network bandwidth consumption.
+- Caching happens through the use of a cache (local or remote store) that controls the response storage, retrieval, and deletion.
 
 | HTTP Method | Idempotent | Safe | Cacheable |
 | ----------- | ---------- | ---- | --------- |
@@ -1085,6 +1089,8 @@ Authorization: Bearer <JWT-token including a tenant-id: adventureworks claim>
 ```
 GET https://api.contoso.com/tenants/adventureworks/orders/3
 ```
+
+### CACHING
 
 ## Security
 
