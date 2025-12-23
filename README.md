@@ -69,6 +69,10 @@
         - [ALGORITHM - RS256](#algorithm---rs256)
     - [Transport Layer Security](#transport-layer-security)
   - [Documentation](#documentation)
+    - [OpenAPI Specification](#openapi-specification)
+  - [Trade-Offs](#trade-offs)
+    - [Advantages](#advantages)
+    - [Disadvantages](#disadvantages)
 
 # REST API
 
@@ -1338,3 +1342,26 @@ except jwt.InvalidTokenError as e:
 - Transport Layer Security (TLS) is a security protocol that protects data while it is being transmitted over a network. It provides encryption, integrity, and authentication between a client (like a browser) and a server.
 
 ## Documentation
+
+### OpenAPI Specification
+
+- The OpenAPI Specification (OAS), formerly known as Swagger, is the most popular tool for documenting HTTPbased APIs
+
+## Trade-Offs
+
+### Advantages
+
+| Aspect                    | Description                                                                                                                                                                                                                                                                                                                                     |
+| ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Scalability**           | REST was designed for internet-scale systems. Its stateless nature allows each request to be handled independently, which makes horizontal scaling easier and more efficient.                                                                                                                                                                   |
+| **Interoperability**      | REST relies on standardized HTTP, which is supported by most programming languages, libraries, and platforms. This allows systems built with different technologies to communicate easily. Statelessness also simplifies integration across applications and services.                                                                          |
+| **Debugging and Tooling** | REST APIs commonly use human-readable formats such as JSON or XML, making debugging and data inspection easier than binary protocols like Protocol Buffers. REST is also supported by a rich ecosystem of tools, including servers, caches, load balancers, proxies, firewalls, monitoring systems, testing tools, and documentation utilities. |
+
+### Disadvantages
+
+| Aspect                           | Description                                                                                                                                                                                                                                                              |
+| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Limited Vocabulary**           | REST relies on a small set of HTTP verbs (GET, POST, PUT, DELETE, etc.). These verbs may be insufficient to clearly express complex domain-specific operations that do not map well to standard HTTP semantics.                                                          |
+| **Security Challenges**          | The optional _code-on-demand_ constraint allows servers to send executable code to clients. If misused, this can introduce security risks such as cross-site scripting (XSS), injection attacks, and unauthorized data access.                                           |
+| **Limitations of Statelessness** | Because REST is stateless, each request must contain all required information. This can increase payload size and makes REST less suitable for stateful workflows (e.g., shopping carts). State management is often pushed to the client using cookies or local storage. |
+| **No Standardized Versioning**   | REST does not define a built-in versioning mechanism. Clients are sensitive to API changes, and frequent version updates can cause breaking changes. While HATEOAS can reduce coupling, it does not eliminate the need for clients to understand API semantics.          |
