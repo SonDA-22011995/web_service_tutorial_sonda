@@ -14,12 +14,16 @@
     - [Request Body](#request-body)
     - [Query Parameters](#query-parameters)
     - [HTTP Request vs HTTP Response](#http-request-vs-http-response)
-  - [Responses HTTP codes](#responses-http-codes)
-    - [1xx — Informational](#1xx--informational)
-    - [2xx — Success](#2xx--success)
-    - [3xx — Redirection](#3xx--redirection)
-    - [4xx — Client Errors](#4xx--client-errors)
-    - [5xx — Server Errors](#5xx--server-errors)
+    - [Responses HTTP codes](#responses-http-codes)
+      - [1xx — Informational](#1xx--informational)
+      - [2xx — Success](#2xx--success)
+      - [3xx — Redirection](#3xx--redirection)
+      - [4xx — Client Errors](#4xx--client-errors)
+      - [5xx — Server Errors](#5xx--server-errors)
+    - [HTTP IDEMPOTENCY, SAFETY, AND CACHING](#http-idempotency-safety-and-caching)
+      - [WHAT IS IDEMPOTENCY](#what-is-idempotency)
+      - [WHAT IS SAFETY](#what-is-safety)
+      - [WHAT IS CACHING](#what-is-caching)
   - [The Six Constraints](#the-six-constraints)
     - [Uniform Interface](#uniform-interface)
       - [Resource Identification (via URI)](#resource-identification-via-uri)
@@ -52,6 +56,9 @@
       - [Subdomain or Domain-Based Isolation (DNS-Level Tenancy)](#subdomain-or-domain-based-isolation-dns-level-tenancy)
       - [Pass tenant-specific HTTP headers](#pass-tenant-specific-http-headers)
       - [Pass tenant-specific information through the URI path](#pass-tenant-specific-information-through-the-uri-path)
+  - [Security](#security)
+    - [JSON Web Token](#json-web-token)
+  - [Documentation](#documentation)
 
 # REST API
 
@@ -276,9 +283,9 @@ GET /users?page=2&limit=10
 | Asks for an action        | Returns result              |
 | Contains method & headers | Contains status code & data |
 
-## Responses HTTP codes
+### Responses HTTP codes
 
-### 1xx — Informational
+#### 1xx — Informational
 
 | Code    | Meaning             |
 | ------- | ------------------- |
@@ -286,7 +293,7 @@ GET /users?page=2&limit=10
 | **101** | Switching Protocols |
 | **102** | Processing          |
 
-### 2xx — Success
+#### 2xx — Success
 
 | Code    | Meaning                       |
 | ------- | ----------------------------- |
@@ -298,7 +305,7 @@ GET /users?page=2&limit=10
 | **205** | Reset Content                 |
 | **206** | Partial Content               |
 
-### 3xx — Redirection
+#### 3xx — Redirection
 
 | Code    | Meaning                    |
 | ------- | -------------------------- |
@@ -310,7 +317,7 @@ GET /users?page=2&limit=10
 | **307** | Temporary Redirect         |
 | **308** | Permanent Redirect         |
 
-### 4xx — Client Errors
+#### 4xx — Client Errors
 
 | Code    | Meaning                |
 | ------- | ---------------------- |
@@ -331,7 +338,7 @@ GET /users?page=2&limit=10
 | **422** | Unprocessable Entity   |
 | **429** | Too Many Requests      |
 
-### 5xx — Server Errors
+#### 5xx — Server Errors
 
 | Code    | Meaning                    |
 | ------- | -------------------------- |
@@ -343,6 +350,40 @@ GET /users?page=2&limit=10
 | **505** | HTTP Version Not Supported |
 | **507** | Insufficient Storage       |
 | **508** | Loop Detected              |
+
+### HTTP IDEMPOTENCY, SAFETY, AND CACHING
+
+#### WHAT IS IDEMPOTENCY
+
+- An idempotent HTTP method has the same effect on the server when called once or multiple times.
+- For example
+  - No matter how many times you retrieve a resource with the `GET` method, it’ll return the same data.
+  - The same applies to the DELETE method. When performing an initial DELETE request, the server will respond with an HTTP 200 (OK) status code, and any consecutive DELETE
+    request to the same resource will return an HTTP 404 (Not Found) status code
+
+#### WHAT IS SAFETY
+
+- An operation is **“safe”** if it doesn’t modify the server’s state.
+- For example
+  - the `POST` method is not safe because it will create a new resource.
+  - But a safe method doesn’t necessarily have to be read-only. Reading a resource may still cause side effects on the server, such as logging or rate-limiting of the requests.
+  - The method is considered safe as long as the client does not initiate those side effects.
+
+#### WHAT IS CACHING
+
+-
+
+| HTTP Method | Idempotent | Safe | Cacheable |
+| ----------- | ---------- | ---- | --------- |
+| GET         | Yes        | Yes  | Yes       |
+| HEAD        | Yes        | Yes  | Yes       |
+| POST        | No         | No   | No        |
+| PUT         | Yes        | No   | No        |
+| DELETE      | Yes        | No   | No        |
+| CONNECT     | No         | No   | No        |
+| OPTIONS     | Yes        | Yes  | No        |
+| TRACE       | Yes        | Yes  | No        |
+| PATCH       | No         | No   | No        |
 
 ## The Six Constraints
 
@@ -1044,3 +1085,9 @@ Authorization: Bearer <JWT-token including a tenant-id: adventureworks claim>
 ```
 GET https://api.contoso.com/tenants/adventureworks/orders/3
 ```
+
+## Security
+
+### JSON Web Token
+
+## Documentation
