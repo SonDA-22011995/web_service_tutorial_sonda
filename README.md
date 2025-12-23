@@ -59,6 +59,15 @@
     - [CACHING](#caching)
   - [Security](#security)
     - [JSON Web Token](#json-web-token)
+      - [When should you use JSON Web Tokens?](#when-should-you-use-json-web-tokens)
+      - [What is the JSON Web Token structure?](#what-is-the-json-web-token-structure)
+      - [Header](#header)
+      - [Payload](#payload)
+      - [Signature](#signature)
+      - [Example](#example-1)
+        - [ALGORITHM - HS256](#algorithm---hs256)
+        - [ALGORITHM - RS256](#algorithm---rs256)
+    - [Transport Layer Security](#transport-layer-security)
   - [Documentation](#documentation)
 
 # REST API
@@ -1127,5 +1136,205 @@ if __name__ == "__main__":
 ## Security
 
 ### JSON Web Token
+
+#### When should you use JSON Web Tokens?
+
+- Authorization: This is the most common scenario for using JWT
+- Information Exchange: JSON Web Tokens are a good way of securely transmitting information between parties
+
+#### What is the JSON Web Token structure?
+
+- JSON Web Tokens consist of three parts separated by dots (.), which are:
+  - Header: Contains metadata about the token, such as the algorithm used for signing.
+  - Payload: Stores the claims, i.e., data being transmitted.
+  - Signature: Ensures the token's integrity and authenticity
+- Therefore, a JWT typically looks like the following:
+
+```
+xxxxx.yyyyy.zzzzz
+```
+
+#### Header
+
+- The header contains metadata about the token, including the signing algorithm and token type here metadata means data about data.
+  - alg: Algorithm used for signing (e.g., HS256, RS256).
+  - typ: Token type, always "JWT".
+
+```
+{
+    "alg": "HS256",
+    "typ": "JWT"
+}
+```
+
+#### Payload
+
+- The payload contains the information about the user also called as a claim and some additional information including the timestamp at which it was issued and the expiry time of the token.
+- Common claim types
+  - iss (Issuer): Identifies who issued the token.
+  - sub (Subject): Represents the user or entity the token is about.
+  - aud (Audience): Specifies the intended recipient.
+  - exp (Expiration): Defines when the token expires.
+  - iat (Issued At): Timestamp when the token was created.
+  - nbf (Not Before): Specifies when the token becomes valid.
+
+```
+{
+    "userId": 123,
+    "role": "admin",
+    "exp": 1672531199
+}
+```
+
+#### Signature
+
+- The signature ensures token integrity and is generated using the header, payload, and a secret key.
+
+#### Example
+
+##### ALGORITHM - HS256
+
+**ENCODE**
+
+```
+import jwt
+from datetime import datetime, timedelta
+
+# Secret key (phải giữ bí mật)
+SECRET_KEY = "my-secret-key"
+ALGORITHM = "HS256"
+
+# Payload (claims)
+payload = {
+    "sub": "22011995",
+    "username": "Đào An Sơn",
+    "role": "admin",
+    "iat": datetime.utcnow(),                      # issued at
+    "exp": datetime.utcnow() + timedelta(minutes=30)  # expires in 30 minutes
+}
+
+# Tạo JWT
+token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
+
+print(token)
+```
+
+**DECODE**
+
+```
+try:
+    decoded = jwt.decode(
+        token,
+        SECRET_KEY,
+        algorithms=["HS256"]
+    )
+    print(decoded)
+except jwt.ExpiredSignatureError:
+    print("Token has expired")
+except jwt.InvalidTokenError:
+    print("Invalid token")
+
+```
+
+##### ALGORITHM - RS256
+
+```
+Private key  ──(encode / sign)──▶  JWT  ──(verify)──▶  Public key
+```
+
+- Step 1: Generate an RSA key pair (one-time setup)
+
+```
+openssl genrsa -out private.pem 2048
+```
+
+| Component          | Explanation                                                     |
+| ------------------ | --------------------------------------------------------------- |
+| `openssl`          | Runs the OpenSSL command-line tool.                             |
+| `genrsa`           | Generates an RSA private key.                                   |
+| `-out private.pem` | Saves the generated private key to a file named `private.pem`.  |
+| `2048`             | Specifies the key size in bits.                                 |
+| _(note)_           | 2048 bits is the minimum recommended secure size for RSA today. |
+
+```
+openssl rsa -in private.pem -pubout -out public.pem
+```
+
+| Component         | Explanation                                            |
+| ----------------- | ------------------------------------------------------ |
+| `openssl`         | Runs the OpenSSL command-line tool.                    |
+| `rsa`             | Works with RSA keys (view, convert, or extract parts). |
+| `-in private.pem` | Uses the private key file `private.pem` as input.      |
+| `-pubout`         | Extracts the public key from the private key.          |
+| `-out public.pem` | Writes the public key to a file named `public.pem`.    |
+
+- Step 2: Encode JWT by RS256 (Python)
+
+**Install library**
+
+```
+pip install PyJWT cryptography
+```
+
+**Encode**
+
+```
+import jwt
+from datetime import datetime, timedelta
+
+# Đọc private key
+with open("private.pem", "r", encoding="utf-8") as f:
+    private_key = f.read()
+
+# Payload
+payload = {
+    "sub": "22011995",
+    "name": "Dao An Son",
+    "role": "admin",
+    "iat": datetime.utcnow(),
+    "exp": datetime.utcnow() + timedelta(minutes=30)
+}
+
+# Encode JWT (RS256)
+token = jwt.encode(
+    payload,
+    private_key,
+    algorithm="RS256"
+)
+
+print("JWT token:")
+print(token)
+```
+
+**Decode and Verify JWT by Public Key**
+
+```
+import jwt
+
+# Đọc public key
+with open("public.pem", "r", encoding="utf-8") as f:
+    public_key = f.read()
+
+token = "<DÁN TOKEN VỪA TẠO VÀO ĐÂY>"
+
+try:
+    decoded = jwt.decode(
+        token,
+        public_key,
+        algorithms=["RS256"]
+    )
+    print("Decoded payload:")
+    print(decoded)
+
+except jwt.ExpiredSignatureError:
+    print("❌ Token đã hết hạn")
+
+except jwt.InvalidTokenError as e:
+    print("❌ Token không hợp lệ:", str(e))
+```
+
+### Transport Layer Security
+
+- Transport Layer Security (TLS) is a security protocol that protects data while it is being transmitted over a network. It provides encryption, integrity, and authentication between a client (like a browser) and a server.
 
 ## Documentation
