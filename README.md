@@ -1092,6 +1092,38 @@ GET https://api.contoso.com/tenants/adventureworks/orders/3
 
 ### CACHING
 
+```
+from flask import Flask, jsonify
+from flask_caching import Cache
+import time
+
+app = Flask(__name__)
+
+# Cấu hình cache (SimpleCache dùng cho demo)
+app.config["CACHE_TYPE"] = "SimpleCache"
+app.config["CACHE_DEFAULT_TIMEOUT"] = 60  # seconds
+
+cache = Cache(app)
+
+
+@app.get("/users/<int:user_id>")
+@cache.cached(timeout=30)  # cache response 30s
+def get_user(user_id):
+    # Giả lập truy vấn DB chậm
+    time.sleep(3)
+
+    return jsonify({
+        "id": user_id,
+        "name": "John",
+        "cached_at": time.time()
+    })
+
+
+if __name__ == "__main__":
+    app.run(debug=True)
+
+```
+
 ## Security
 
 ### JSON Web Token
